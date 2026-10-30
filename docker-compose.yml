@@ -1,0 +1,41 @@
+services:
+  # Application data only. n8n keeps its own state in SQLite inside n8n_data.
+  postgres:
+    image: postgres:16-alpine
+    container_name: reviews-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      # Bound to localhost only; 5434 avoids clashing with other local Postgres instances.
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - reviews_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  n8n:
+    # Pin a specific version once the project is stable.
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: reviews-n8n
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      # Set explicitly and back it up: without it, stored credentials cannot be decrypted after a move.
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      # Schedule Trigger nodes run in this timezone.
+      GENERIC_TIMEZONE: Europe/Moscow
+      TZ: Europe/Moscow
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  reviews_pgdata:
+  n8n_data:
