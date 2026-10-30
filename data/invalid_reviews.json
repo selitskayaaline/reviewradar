@@ -1,0 +1,6 @@
+[
+  { "article": "WB-2001", "rating": 5, "text": "" },
+  { "article": "WB-2002", "rating": 3, "text": "     " },
+  { "article": "WB-2003", "rating": 7, "text": "Оценка вне диапазона" },
+  { "article": "WB-2004", "rating": 4 }
+]
