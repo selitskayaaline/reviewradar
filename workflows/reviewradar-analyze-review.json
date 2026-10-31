@@ -1,0 +1,851 @@
+{
+  "name": "reviewradar — analyze review",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "3be15411-0f55-405c-a305-50938c67b255",
+              "leftValue": "={{ typeof $json.body.text === 'string' && $json.body.text.trim().length > 0 && ($json.body.rating == null || [1,2,3,4,5].includes($json.body.rating)) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        -512,
+        480
+      ],
+      "id": "a9c2236b-c043-409e-8f95-d0f403066c87",
+      "name": "Is review valid"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"status\": \"error\", \"error\": \"text is required and rating must be 1-5\" }",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -288,
+        576
+      ],
+      "id": "24789704-1830-4df9-af4d-eacb5e1b17fe",
+      "name": "Reject invalid review"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "RqUID",
+              "value": "B4AE831F-B26B-4D59-9F04-E14B8F160B4F"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "scope",
+              "value": "GIGACHAT_API_PERS"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -288,
+        384
+      ],
+      "id": "ba51454f-22a2-4411-8d34-11aee29ecc0f",
+      "name": "Get token",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xNRckDUcRooSOPYC",
+          "name": "Header Auth account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get token').item.json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"GigaChat\",\n  \"messages\": [\n    {\"role\": \"system\", \"content\": \"Ты анализируешь отзывы покупателей женской одежды на маркетплейсе. Верни только JSON по схеме. sentiment: positive — покупатель доволен; negative — есть претензия, в том числе высказанная с сарказмом; neutral — вопрос, спам, отзыв без оценки или «ничего особенного». category — главная тема отзыва: size (размер, посадка, фасон не подошёл), fabric_quality (качество ткани и пошива), defect (брак: дыра, пятно, порванный шов, оторванная пуговица), delivery (доставка, упаковка, сроки), not_as_photo (цвет, фасон или товар не совпадает с фото или описанием), other (всё остальное, вопросы, спам). Если жалоб несколько, выбери самую серьёзную; для похвалы выбери тему похвалы. summary — одно предложение по-русски, до 15 слов, без выдуманных фактов. needs_reply — true, если покупатель ждёт ответа продавца (вопрос, требование возврата, брак, не тот товар), иначе false.\"},\n    {\"role\": \"user\", \"content\": {{ JSON.stringify($('Receive review').item.json.body.text) }} }\n  ],\n  \"response_format\": {\n    \"type\": \"json_schema\",\n    \"strict\": true,\n    \"schema\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"sentiment\": {\"type\": \"string\", \"enum\": [\"positive\", \"neutral\", \"negative\"], \"description\": \"Тональность отзыва\"},\n        \"category\": {\"type\": \"string\", \"enum\": [\"size\", \"fabric_quality\", \"defect\", \"delivery\", \"not_as_photo\", \"other\"], \"description\": \"Главная тема отзыва\"},\n        \"summary\": {\"type\": \"string\", \"description\": \"Суть отзыва одним предложением по-русски\"},\n        \"needs_reply\": {\"type\": \"boolean\", \"description\": \"Нужен ли ответ продавца\"}\n      },\n      \"required\": [\"sentiment\", \"category\", \"summary\", \"needs_reply\"]\n    }\n  }\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -64,
+        240
+      ],
+      "id": "955ffeb2-fbd8-497f-abe4-0f1b95942061",
+      "name": "Ask GigaChat",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "review",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        -736,
+        480
+      ],
+      "id": "422d7b33-202f-45b6-a929-9d1f3d7220b7",
+      "name": "Receive review",
+      "webhookId": "fa3c8bf1-0ce5-44a0-8799-f7bcfcb44617",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "zUqtGdQekSaXaoRv",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ALLOWED_SENTIMENT = ['positive', 'neutral', 'negative'];\nconst ALLOWED_CATEGORY = ['size', 'fabric_quality', 'defect', 'delivery', 'not_as_photo', 'other'];\n\nconst raw = $json.choices?.[0]?.message?.content ?? '';\nconst cleaned = raw\n  .replace(/^\\s*\\x60{3}(?:json)?\\s*/i, '')\n  .replace(/\\s*\\x60{3}\\s*$/, '')\n  .trim();\n\nlet parsed = null;\nlet error = null;\n\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  error = 'invalid_json';\n}\n\nif (error === null && (typeof parsed !== 'object' || parsed === null)) {\n  error = 'not_object';\n}\n\nif (error === null) {\n  if (!ALLOWED_SENTIMENT.includes(parsed.sentiment)) error = 'bad_sentiment';\n  else if (!ALLOWED_CATEGORY.includes(parsed.category)) error = 'bad_category';\n  else if (typeof parsed.summary !== 'string' || parsed.summary.trim() === '') error = 'bad_summary';\n  else if (typeof parsed.needs_reply !== 'boolean') error = 'bad_needs_reply';\n}\n\nconst provider = $prevNode.name === 'Ask OpenRouter' ? 'openrouter' : 'gigachat';\n\nreturn {\n  json: {\n    ok: error === null,\n    error,\n    provider,\n    analysis: error === null ? parsed : null,\n    raw_response: $json,\n  },\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -160
+      ],
+      "id": "69099e64-c601-4e15-99a1-1333707937bc",
+      "name": "Parse and validate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "1932d1a5-d324-40a2-bddb-7244315e14fe",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        384,
+        -208
+      ],
+      "id": "d8716b4e-4d9f-425e-90f8-e7739b629aa5",
+      "name": "Parse ok?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"status\": \"error\", \"error\": \"model_output_invalid\" }",
+        "options": {
+          "responseCode": 502
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1056,
+        288
+      ],
+      "id": "4d866eb6-4fb1-48c4-8918-e8fac3b85819",
+      "name": "Respond model error"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"models\": [\"google/gemma-4-31b-it:free\", \"google/gemma-4-26b-a4b-it:free\", \"nvidia/nemotron-3.5-super-vl:free\"],\n  \"temperature\": 0,\n  \"response_format\": {\"type\": \"json_object\"},\n  \"messages\": [\n    {\"role\": \"system\", \"content\": \"Ты анализируешь отзывы покупателей женской одежды на маркетплейсе. Верни только JSON. sentiment: positive — покупатель доволен; negative — есть претензия, в том числе высказанная с сарказмом; neutral — вопрос, спам, отзыв без оценки или «ничего особенного». category — главная тема отзыва: size (размер, посадка, фасон не подошёл), fabric_quality (качество ткани и пошива), defect (брак: дыра, пятно, порванный шов, оторванная пуговица), delivery (доставка, упаковка, сроки), not_as_photo (цвет, фасон или товар не совпадает с фото или описанием), other (всё остальное, вопросы, спам). Если жалоб несколько, выбери самую серьёзную; для похвалы выбери тему похвалы. summary — одно предложение по-русски, до 15 слов, без выдуманных фактов. needs_reply — true, если покупатель ждёт ответа продавца (вопрос, требование возврата, брак, не тот товар), иначе false. Формат ответа: JSON-объект с полями sentiment, category, summary (строки) и needs_reply (true или false). Не добавляй никакого текста вне JSON.\"},\n    {\"role\": \"user\", \"content\": {{ JSON.stringify($('Receive review').item.json.body.text) }} }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        832,
+        96
+      ],
+      "id": "11675824-d1ae-4035-a37f-f4e1443a1329",
+      "name": "Ask OpenRouter",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "A0wFhJqgpVRGdiLX",
+          "name": "OpenRouter"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $runIndex }}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "id": "7d7cd4ad-5ef7-4ca5-acdf-236e5fccdfe5"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "35d966a2-c4fe-4ac5-a078-11ac5b6823be",
+                    "leftValue": "={{ $runIndex }}",
+                    "rightValue": 1,
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": "={{ false }}",
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        608,
+        -128
+      ],
+      "id": "5c5bfd56-8f71-4ebc-86b5-2eb3f77450c8",
+      "name": "Next attempt"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "reviews",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source": "webhook",
+            "article": "={{ $('Receive review').item.json.body.article }}",
+            "rating": "={{ $('Receive review').item.json.body.rating }}",
+            "review_text": "={{ $('Receive review').item.json.body.text }}",
+            "provider": "={{ $json.provider }}",
+            "status": "parse_error",
+            "raw_response": "={{ JSON.stringify($json.raw_response) }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "article",
+              "displayName": "article",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rating",
+              "displayName": "rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_text",
+              "displayName": "review_text",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "needs_reply",
+              "displayName": "needs_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "provider",
+              "displayName": "provider",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_response",
+              "displayName": "raw_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        832,
+        288
+      ],
+      "id": "895997eb-1549-40c3-8a16-ee97eed03aca",
+      "name": "Save failed review",
+      "credentials": {
+        "postgres": {
+          "id": "yWNYu4QjXFteL1Lw",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "name",
+          "value": "reviews"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "needs_reply": "={{ $json.analysis.needs_reply }}",
+            "source": "webhook",
+            "article": "={{ $('Receive review').item.json.body.article }}",
+            "rating": "={{ $('Receive review').item.json.body.rating }}",
+            "review_text": "={{ $('Receive review').item.json.body.text }}",
+            "sentiment": "={{ $json.analysis.sentiment }}",
+            "category": "={{ $json.analysis.category }}",
+            "summary": "={{ $json.analysis.summary }}",
+            "provider": "={{ $json.provider }}",
+            "status": "ok",
+            "raw_response": "={{ JSON.stringify($json.raw_response) }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "article",
+              "displayName": "article",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "rating",
+              "displayName": "rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "review_text",
+              "displayName": "review_text",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sentiment",
+              "displayName": "sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "needs_reply",
+              "displayName": "needs_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "provider",
+              "displayName": "provider",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "raw_response",
+              "displayName": "raw_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        608,
+        -320
+      ],
+      "id": "ee879b1a-b106-4e09-bc54-5fd0344b640b",
+      "name": "Save review",
+      "credentials": {
+        "postgres": {
+          "id": "yWNYu4QjXFteL1Lw",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: \"ok\", id: $json.id, sentiment: $json.sentiment, category: $json.category, summary: $json.summary, needs_reply: $json.needs_reply, provider: $json.provider } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        832,
+        -320
+      ],
+      "id": "66348c79-4f91-4931-a6e3-8741f0baf858",
+      "name": "Respond OK"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Is review valid": {
+      "main": [
+        [
+          {
+            "node": "Get token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject invalid review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get token": {
+      "main": [
+        [
+          {
+            "node": "Ask GigaChat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask GigaChat": {
+      "main": [
+        [
+          {
+            "node": "Parse and validate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive review": {
+      "main": [
+        [
+          {
+            "node": "Is review valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse and validate": {
+      "main": [
+        [
+          {
+            "node": "Parse ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse ok?": {
+      "main": [
+        [
+          {
+            "node": "Save review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Next attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Next attempt": {
+      "main": [
+        [
+          {
+            "node": "Ask GigaChat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save failed review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Parse and validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save failed review": {
+      "main": [
+        [
+          {
+            "node": "Respond model error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save review": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "63064219-7fa5-4ce1-bbc9-ef7c1420ef57",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d20e0a5432cdf9abded84f8ba9550f63577fa05f4bc7d9a51acf9f0cd9966e9b"
+  },
+  "nodeGroups": [],
+  "id": "nTRUvz5iRdR4G5Dx",
+  "tags": []
+}
