@@ -30,10 +30,14 @@ services:
       # Set explicitly and back it up: without it, stored credentials cannot be decrypted after a move.
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
       # Schedule Trigger nodes run in this timezone.
       GENERIC_TIMEZONE: Europe/Moscow
       TZ: Europe/Moscow
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "168"
     volumes:
       - n8n_data:/home/node/.n8n
 

@@ -1,0 +1,132 @@
+{
+  "name": "reviewradar — daily report",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const stats = $input.first().json;\nreturn {\n  json: {\n    text: `🌅 *Доброе утро! Сводка по отзывам:*\\n\\nВсего в базе: ${stats.total}\\nНегативных: ${stats.negative}\\nОшибок парсинга: ${stats.errors}`\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "5192ce39-e6de-4ce8-90cb-93aa949c8a10",
+      "name": "Format Daily Report"
+    },
+    {
+      "parameters": {
+        "chatId": "409203118",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "e49a5e16-73b8-4c55-a06c-5573d867bc9f",
+      "name": "Send Daily Report",
+      "webhookId": "7287f3dd-8b78-495c-bd29-22bdabd827e3",
+      "credentials": {
+        "telegramApi": {
+          "id": "Msgyb27BtAGmKy9J",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "10adaa78-77e2-4a8f-abbd-9584e321c040",
+      "name": "Every Morning 10AM"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  COUNT(*) as total,\n  COUNT(*) FILTER (WHERE sentiment = 'negative') as negative,\n  COUNT(*) FILTER (WHERE status = 'parse_error') as errors\nFROM reviews;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3bfddf9b-dd7d-491c-8cec-fc832b345b16",
+      "name": "Get Daily Stats",
+      "credentials": {
+        "postgres": {
+          "id": "yWNYu4QjXFteL1Lw",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Format Daily Report": {
+      "main": [
+        [
+          {
+            "node": "Send Daily Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Morning 10AM": {
+      "main": [
+        [
+          {
+            "node": "Get Daily Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Daily Stats": {
+      "main": [
+        [
+          {
+            "node": "Format Daily Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8ad07fe4-0562-4a6d-841e-8e2c5a91876a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d20e0a5432cdf9abded84f8ba9550f63577fa05f4bc7d9a51acf9f0cd9966e9b"
+  },
+  "nodeGroups": [],
+  "id": "YaKrbz5C4Jo9nI6l",
+  "tags": []
+}

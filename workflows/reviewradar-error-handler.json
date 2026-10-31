@@ -1,0 +1,67 @@
+{
+  "name": "reviewradar — error trigger",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "12bf3173-90f3-4657-bdcd-31f5b633bd45",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "409203118",
+        "text": "=❌ ОШИБКА В СИСТЕМЕ!  Воркфлоу: {{ $json.workflow.name }} Нода: {{ $json.execution.lastNodeExecuted }} Ошибка: {{ $json.execution.error.message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "695efca0-6134-46ce-a035-8708c95220fe",
+      "name": "Send a text message",
+      "webhookId": "157c0433-01ea-4002-bbd1-276bd57542cc",
+      "credentials": {
+        "telegramApi": {
+          "id": "Msgyb27BtAGmKy9J",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c69274ad-16e7-4ea5-8657-5e9455a70850",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d20e0a5432cdf9abded84f8ba9550f63577fa05f4bc7d9a51acf9f0cd9966e9b"
+  },
+  "nodeGroups": [],
+  "id": "6sPBZjgzdZ3weJZc",
+  "tags": []
+}

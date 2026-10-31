@@ -82,7 +82,7 @@
           ]
         },
         "options": {
-          "allowUnauthorizedCerts": true
+          "allowUnauthorizedCerts": false
         }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -118,7 +118,7 @@
         "specifyBody": "json",
         "jsonBody": "={\n  \"model\": \"GigaChat\",\n  \"messages\": [\n    {\"role\": \"system\", \"content\": \"Ты анализируешь отзывы покупателей женской одежды на маркетплейсе. Верни только JSON по схеме. sentiment: positive — покупатель доволен; negative — есть претензия, в том числе высказанная с сарказмом; neutral — вопрос, спам, отзыв без оценки или «ничего особенного». category — главная тема отзыва: size (размер, посадка, фасон не подошёл), fabric_quality (качество ткани и пошива), defect (брак: дыра, пятно, порванный шов, оторванная пуговица), delivery (доставка, упаковка, сроки), not_as_photo (цвет, фасон или товар не совпадает с фото или описанием), other (всё остальное, вопросы, спам). Если жалоб несколько, выбери самую серьёзную; для похвалы выбери тему похвалы. summary — одно предложение по-русски, до 15 слов, без выдуманных фактов. needs_reply — true, если покупатель ждёт ответа продавца (вопрос, требование возврата, брак, не тот товар), иначе false.\"},\n    {\"role\": \"user\", \"content\": {{ JSON.stringify($('Receive review').item.json.body.text) }} }\n  ],\n  \"response_format\": {\n    \"type\": \"json_schema\",\n    \"strict\": true,\n    \"schema\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"sentiment\": {\"type\": \"string\", \"enum\": [\"positive\", \"neutral\", \"negative\"], \"description\": \"Тональность отзыва\"},\n        \"category\": {\"type\": \"string\", \"enum\": [\"size\", \"fabric_quality\", \"defect\", \"delivery\", \"not_as_photo\", \"other\"], \"description\": \"Главная тема отзыва\"},\n        \"summary\": {\"type\": \"string\", \"description\": \"Суть отзыва одним предложением по-русски\"},\n        \"needs_reply\": {\"type\": \"boolean\", \"description\": \"Нужен ли ответ продавца\"}\n      },\n      \"required\": [\"sentiment\", \"category\", \"summary\", \"needs_reply\"]\n    }\n  }\n}",
         "options": {
-          "allowUnauthorizedCerts": true
+          "allowUnauthorizedCerts": false
         }
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -673,11 +673,78 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        832,
-        -320
+        1040,
+        -128
       ],
       "id": "66348c79-4f91-4931-a6e3-8741f0baf858",
       "name": "Respond OK"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "19b88047-7b57-49e3-b136-1ed13194718e",
+              "leftValue": "={{ $json.sentiment }}",
+              "rightValue": "negative",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "83bcf313-8b44-4c90-9706-08ae518a906c",
+              "leftValue": "={{ $json.needs_reply }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        944,
+        -384
+      ],
+      "id": "095d9598-5fbc-4744-8a6f-579267b5e520",
+      "name": "Needs Alert?"
+    },
+    {
+      "parameters": {
+        "chatId": "409203118",
+        "text": "=🚨 *Внимание! Плохой отзыв.*\n\n📦 *Артикул:* {{ $('Receive review').item.json.body.article }}\n⭐️ *Оценка:* {{ $('Receive review').item.json.body.rating }}\n📝 *Текст:* {{ $('Receive review').item.json.body.text }}\n\n🤖 *Резюме:* {{ $json.summary }}\n🏷 *Категория:* {{ $json.category }}\n❗️ *Нужен ответ:* {{ $json.needs_reply }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1168,
+        -480
+      ],
+      "id": "648fa894-abb7-4dd4-b4ce-5a8c8b9cc4c6",
+      "name": "Telegram Alert",
+      "webhookId": "ad6d1bbc-7dfc-4b1c-b6de-0458c86f4952",
+      "credentials": {
+        "telegramApi": {
+          "id": "Msgyb27BtAGmKy9J",
+          "name": "Telegram account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -827,7 +894,23 @@
       "main": [
         [
           {
+            "node": "Needs Alert?",
+            "type": "main",
+            "index": 0
+          },
+          {
             "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Alert?": {
+      "main": [
+        [
+          {
+            "node": "Telegram Alert",
             "type": "main",
             "index": 0
           }
@@ -838,9 +921,13 @@
   "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "6sPBZjgzdZ3weJZc",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "63064219-7fa5-4ce1-bbc9-ef7c1420ef57",
+  "versionId": "eb809323-f575-4bc1-867a-dabe3467d278",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "d20e0a5432cdf9abded84f8ba9550f63577fa05f4bc7d9a51acf9f0cd9966e9b"
