@@ -1,0 +1,403 @@
+{
+  "name": "reviewradar — interactive bot",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "8b6500f3-8a29-4a34-9c6f-bbd18d66c9b4",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        -208,
+        -80
+      ],
+      "id": "b879a7b9-b710-4c56-b5ca-c893af849a3f",
+      "name": "Is /start?"
+    },
+    {
+      "parameters": {
+        "chatId": "409203118",
+        "text": "Привет! Я бот ReviewRadar. Отправь мне любой отзыв, и я скажу, хороший он или плохой, и о чем он.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        -80
+      ],
+      "id": "47aa3274-1f02-40dd-978d-5892b752617e",
+      "name": "Reply Greeting",
+      "webhookId": "6e955950-a740-47be-b51c-cfafec85d41c",
+      "credentials": {
+        "telegramApi": {
+          "id": "Msgyb27BtAGmKy9J",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -352,
+        -288
+      ],
+      "id": "bfe5d2a0-3ed3-4859-8720-9a0a27e1cf01",
+      "name": "Run Every Minute"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nreturn {\n  json: {\n    offset: staticData.offset || 0\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        -288
+      ],
+      "id": "8d4efbec-b173-407d-836c-66c2f2a7de8e",
+      "name": "Get Offset"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/getUpdates",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "offset",
+              "value": "={{ $json.offset }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        112,
+        -288
+      ],
+      "id": "16367816-6b3e-460f-a7aa-4042a990cdad",
+      "name": "Ask Telegram"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst result = $json.result;\n\nif (!result || result.length === 0) {\n  return []; // Нет сообщений, стоп\n}\n\nconst lastMessage = result[result.length - 1];\nstaticData.offset = lastMessage.update_id + 1; // Запоминаем, что прочитали\n\nconst text = lastMessage.message?.text;\nconst chatId = lastMessage.message?.chat?.id;\n\nif (!text) return [];\n\nreturn { json: { text, chatId } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -288
+      ],
+      "id": "0d850c7f-1f60-41f1-bb70-fb3082032a73",
+      "name": "Parse Updates"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/review",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"article\": \"TG-BOT\",\n  \"rating\": 5,\n  \"text\": \"{{ $json.text }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        176
+      ],
+      "id": "b057fb2a-eef7-4904-b73e-bba3e4157b7d",
+      "name": "Send to Analysis",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "zUqtGdQekSaXaoRv",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Updates').item.json.chatId }}",
+        "text": "=🤖 *Анализ готов!*\n\n*Тональность:* {{ $json.sentiment }}\n*Категория:* {{ $json.category }}\n*Резюме:* {{ $json.summary }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        176
+      ],
+      "id": "3e4d9d14-fe69-4c6f-903c-645de21963d9",
+      "name": "Bot Reply",
+      "webhookId": "81ef7663-9f16-4d9f-bdc2-aa260a735efd",
+      "credentials": {
+        "telegramApi": {
+          "id": "Msgyb27BtAGmKy9J",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "85e822b7-568e-4b51-96e2-d850502c572e",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "/report",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        -48,
+        192
+      ],
+      "id": "c2be4753-073c-49b8-9c68-cd80c8beac40",
+      "name": "Is /report?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  COUNT(*) as total,\n  COUNT(*) FILTER (WHERE sentiment = 'negative') as negative,\n  COUNT(*) FILTER (WHERE status = 'parse_error') as errors\nFROM reviews;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        432,
+        32
+      ],
+      "id": "e3e93cba-270d-4a0f-b45d-f37ed26a3f82",
+      "name": "Get Report Stats",
+      "credentials": {
+        "postgres": {
+          "id": "yWNYu4QjXFteL1Lw",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const stats = $input.first().json;\nreturn {\n  json: {\n    text: `📊 *Отчет по отзывам*\\n\\nВсего отзывов: ${stats.total}\\nНегативных: ${stats.negative}\\nОшибок парсинга: ${stats.errors}`\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        32
+      ],
+      "id": "fd5d871b-66a0-421a-9f64-9471a01076f2",
+      "name": "Format Report"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Updates').item.json.chatId }}",
+        "text": "= {{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        32
+      ],
+      "id": "9bc1a602-6646-48df-9c73-fe9783559abc",
+      "name": "Send Report",
+      "webhookId": "998e3576-71f7-4ae0-b93e-a6969681a3d1",
+      "credentials": {
+        "telegramApi": {
+          "id": "Msgyb27BtAGmKy9J",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Is /start?": {
+      "main": [
+        [
+          {
+            "node": "Reply Greeting",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is /report?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Every Minute": {
+      "main": [
+        [
+          {
+            "node": "Get Offset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Offset": {
+      "main": [
+        [
+          {
+            "node": "Ask Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Telegram": {
+      "main": [
+        [
+          {
+            "node": "Parse Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Updates": {
+      "main": [
+        [
+          {
+            "node": "Is /start?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Analysis": {
+      "main": [
+        [
+          {
+            "node": "Bot Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is /report?": {
+      "main": [
+        [
+          {
+            "node": "Get Report Stats",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send to Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Report Stats": {
+      "main": [
+        [
+          {
+            "node": "Format Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Report": {
+      "main": [
+        [
+          {
+            "node": "Send Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "069b25ff-da73-4924-827d-b0e5ec071e82",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d20e0a5432cdf9abded84f8ba9550f63577fa05f4bc7d9a51acf9f0cd9966e9b"
+  },
+  "nodeGroups": [],
+  "id": "jqb8nQ8MngWOK51q",
+  "tags": []
+}

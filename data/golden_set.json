@@ -1,0 +1,102 @@
+[
+  {
+    "text": "Платье супер, село идеально, ткань приятная, не мнётся. Беру второй цвет.",
+    "expected_sentiment": "positive",
+    "expected_category": "fabric_quality"
+  },
+  {
+    "text": "Заказывала свой размер, но маломерит сильно, в груди тесно. Пришлось вернуть.",
+    "expected_sentiment": "negative",
+    "expected_category": "size"
+  },
+  {
+    "text": "Пришло с дырой на подоле, нитки торчат. Брак, требую возврат денег.",
+    "expected_sentiment": "negative",
+    "expected_category": "defect"
+  },
+  {
+    "text": "Хорошее платье, но шов на спине немного кривой. В целом довольна.",
+    "expected_sentiment": "positive",
+    "expected_category": "fabric_quality"
+  },
+  {
+    "text": "Цвет совсем не как на фото: на картинке молочный, а пришло жёлтое.",
+    "expected_sentiment": "negative",
+    "expected_category": "not_as_photo"
+  },
+  {
+    "text": "Ждала посылку три недели, коробка помятая. Платье нормальное, но доставка ужас.",
+    "expected_sentiment": "negative",
+    "expected_category": "delivery"
+  },
+  {
+    "text": "Прекрасный костюм! Размер в размер, ткань плотная, швы ровные.",
+    "expected_sentiment": "positive",
+    "expected_category": "fabric_quality"
+  },
+  {
+    "text": "Ткань тонкая и просвечивает, за такую цену ожидала лучшего качества.",
+    "expected_sentiment": "negative",
+    "expected_category": "fabric_quality"
+  },
+  {
+    "text": "Пуговица оторвалась в первый же день. Качество ниже плинтуса.",
+    "expected_sentiment": "negative",
+    "expected_category": "defect"
+  },
+  {
+    "text": "Брюки хорошие, но длина великовата, пришлось подшивать. Рост 160.",
+    "expected_sentiment": "neutral",
+    "expected_category": "size"
+  },
+  {
+    "text": "Нормально. Ничего особенного.",
+    "expected_sentiment": "neutral",
+    "expected_category": "other"
+  },
+  {
+    "text": "Спасибо! Подарок маме, ей очень понравилось. Упаковка аккуратная.",
+    "expected_sentiment": "positive",
+    "expected_category": "other"
+  },
+  {
+    "text": "Пятно на рукаве, видимо, кто-то уже носил. Это возврат?!",
+    "expected_sentiment": "negative",
+    "expected_category": "defect"
+  },
+  {
+    "text": "Размер указан неверно: заказала M, пришло как S. И ткань колючая.",
+    "expected_sentiment": "negative",
+    "expected_category": "size"
+  },
+  {
+    "text": "Лучшая юбка в моём гардеробе. Не садится после стирки, цвет держит.",
+    "expected_sentiment": "positive",
+    "expected_category": "fabric_quality"
+  },
+  {
+    "text": "Юбка красивая, но сильно электризуется. Носить можно, но неприятно.",
+    "expected_sentiment": "neutral",
+    "expected_category": "fabric_quality"
+  },
+  {
+    "text": "Ну конечно, «премиум качество». Пуловер скатался после первой стирки. Спасибо за такой сюрприз.",
+    "expected_sentiment": "negative",
+    "expected_category": "fabric_quality"
+  },
+  {
+    "text": "Ну очень удобно, как раз то, что искала!",
+    "expected_sentiment": "positive",
+    "expected_category": "other"
+  },
+  {
+    "text": "Доставили на два дня раньше срока, курьер вежливый. Сам жакет отличный.",
+    "expected_sentiment": "positive",
+    "expected_category": "delivery"
+  },
+  {
+    "text": "Фото обманчивое: на модели сидит идеально, на мне как мешок. Фасон совсем другой.",
+    "expected_sentiment": "negative",
+    "expected_category": "not_as_photo"
+  }
+]
