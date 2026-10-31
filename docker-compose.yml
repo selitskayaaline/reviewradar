@@ -29,6 +29,7 @@ services:
     environment:
       # Set explicitly and back it up: without it, stored credentials cannot be decrypted after a move.
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       # Schedule Trigger nodes run in this timezone.
       GENERIC_TIMEZONE: Europe/Moscow
       TZ: Europe/Moscow
