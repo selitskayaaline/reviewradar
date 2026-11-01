@@ -12,13 +12,22 @@
           },
           "conditions": [
             {
-              "id": "3be15411-0f55-405c-a305-50938c67b255",
-              "leftValue": "={{ typeof $json.body.text === 'string' && $json.body.text.trim().length > 0 && ($json.body.rating == null || [1,2,3,4,5].includes($json.body.rating)) }}",
+              "id": "5dbf5d74-0a34-422e-b8d8-0fa9d2f6023f",
+              "leftValue": "={{ $json.body.text }}",
               "rightValue": "",
               "operator": {
-                "type": "boolean",
-                "operation": "true",
+                "type": "string",
+                "operation": "notEmpty",
                 "singleValue": true
+              }
+            },
+            {
+              "id": "f72453ed-58eb-452c-90a4-177babe8cdd3",
+              "leftValue": "={{ $json.body.rating }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
               }
             }
           ],
@@ -29,10 +38,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.4,
       "position": [
-        -512,
-        480
+        224,
+        960
       ],
-      "id": "a9c2236b-c043-409e-8f95-d0f403066c87",
+      "id": "d39cf273-f992-45cf-87e3-957026ae9e1b",
       "name": "Is review valid"
     },
     {
@@ -46,10 +55,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        -288,
-        576
+        480,
+        1088
       ],
-      "id": "24789704-1830-4df9-af4d-eacb5e1b17fe",
+      "id": "a76beb48-afa8-4d6a-a1ab-5f45a7345b61",
       "name": "Reject invalid review"
     },
     {
@@ -88,15 +97,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -288,
-        384
+        432,
+        864
       ],
-      "id": "ba51454f-22a2-4411-8d34-11aee29ecc0f",
+      "id": "4fd0c964-5f06-49f8-a62c-748ebe789fa1",
       "name": "Get token",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "xNRckDUcRooSOPYC",
-          "name": "Header Auth account"
+          "id": "RVEUIY3nhb2fUFJy",
+          "name": "OpenRouter"
         }
       },
       "onError": "continueErrorOutput"
@@ -124,10 +133,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        -64,
-        240
+        672,
+        720
       ],
-      "id": "955ffeb2-fbd8-497f-abe4-0f1b95942061",
+      "id": "dc4226d8-ad92-42f5-997f-bcc74a0c007f",
       "name": "Ask GigaChat",
       "onError": "continueErrorOutput"
     },
@@ -142,16 +151,16 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.2,
       "position": [
-        -736,
-        480
+        0,
+        960
       ],
-      "id": "422d7b33-202f-45b6-a929-9d1f3d7220b7",
+      "id": "b654d8a2-56b7-403c-b999-4b5b9855f138",
       "name": "Receive review",
       "webhookId": "fa3c8bf1-0ce5-44a0-8799-f7bcfcb44617",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "zUqtGdQekSaXaoRv",
-          "name": "Header Auth account 2"
+          "id": "lFLCElFQ1vY7E4Ds",
+          "name": "Header Auth account"
         }
       }
     },
@@ -162,10 +171,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        160,
-        -160
+        896,
+        320
       ],
-      "id": "69099e64-c601-4e15-99a1-1333707937bc",
+      "id": "92af63d5-3657-4d23-bea6-44072dedabc5",
       "name": "Parse and validate"
     },
     {
@@ -196,10 +205,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.4,
       "position": [
-        384,
-        -208
+        1120,
+        272
       ],
-      "id": "d8716b4e-4d9f-425e-90f8-e7739b629aa5",
+      "id": "3d058ee9-ba5e-4d14-9979-65d3d31221ea",
       "name": "Parse ok?"
     },
     {
@@ -213,10 +222,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1056,
-        288
+        1792,
+        768
       ],
-      "id": "4d866eb6-4fb1-48c4-8918-e8fac3b85819",
+      "id": "fb20cdd2-bcaa-48e8-adae-e46a5a949828",
       "name": "Respond model error"
     },
     {
@@ -233,14 +242,14 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        832,
-        96
+        1568,
+        576
       ],
-      "id": "11675824-d1ae-4035-a37f-f4e1443a1329",
+      "id": "c3092b3b-1f42-4c36-a359-a4eb8e9450c2",
       "name": "Ask OpenRouter",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "A0wFhJqgpVRGdiLX",
+          "id": "RVEUIY3nhb2fUFJy",
           "name": "OpenRouter"
         }
       }
@@ -303,10 +312,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.5,
       "position": [
-        608,
-        -128
+        1344,
+        352
       ],
-      "id": "5c5bfd56-8f71-4ebc-86b5-2eb3f77450c8",
+      "id": "3028b0a5-9755-4ec9-81ff-56f660640752",
       "name": "Next attempt"
     },
     {
@@ -468,14 +477,14 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.8,
       "position": [
-        832,
-        288
+        1568,
+        768
       ],
-      "id": "895997eb-1549-40c3-8a16-ee97eed03aca",
+      "id": "3a014c24-9f23-4221-bdb0-19043beccddc",
       "name": "Save failed review",
       "credentials": {
         "postgres": {
-          "id": "yWNYu4QjXFteL1Lw",
+          "id": "PVq3E01aX0bzAKHS",
           "name": "Postgres account"
         }
       }
@@ -650,14 +659,14 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.8,
       "position": [
-        608,
-        -320
+        1344,
+        160
       ],
-      "id": "ee879b1a-b106-4e09-bc54-5fd0344b640b",
+      "id": "aaeb67ad-fe0b-4146-89b2-6c43bae7dd71",
       "name": "Save review",
       "credentials": {
         "postgres": {
-          "id": "yWNYu4QjXFteL1Lw",
+          "id": "PVq3E01aX0bzAKHS",
           "name": "Postgres account"
         }
       }
@@ -673,10 +682,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1040,
-        -128
+        1776,
+        352
       ],
-      "id": "66348c79-4f91-4931-a6e3-8741f0baf858",
+      "id": "d033efc1-39a3-4659-a1ec-b0dd2f3cade0",
       "name": "Respond OK"
     },
     {
@@ -715,10 +724,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.4,
       "position": [
-        944,
-        -384
+        1680,
+        96
       ],
-      "id": "095d9598-5fbc-4744-8a6f-579267b5e520",
+      "id": "31b84bc8-72a4-4fc9-b1f6-680bd5f4b2b5",
       "name": "Needs Alert?"
     },
     {
@@ -726,22 +735,21 @@
         "chatId": "409203118",
         "text": "=🚨 *Внимание! Плохой отзыв.*\n\n📦 *Артикул:* {{ $('Receive review').item.json.body.article }}\n⭐️ *Оценка:* {{ $('Receive review').item.json.body.rating }}\n📝 *Текст:* {{ $('Receive review').item.json.body.text }}\n\n🤖 *Резюме:* {{ $json.summary }}\n🏷 *Категория:* {{ $json.category }}\n❗️ *Нужен ответ:* {{ $json.needs_reply }}",
         "additionalFields": {
-          "appendAttribution": false,
-          "parse_mode": "Markdown"
+          "appendAttribution": false
         }
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1168,
-        -480
+        1904,
+        0
       ],
-      "id": "648fa894-abb7-4dd4-b4ce-5a8c8b9cc4c6",
+      "id": "019dd010-7cb1-4598-a271-fcb6e0df401b",
       "name": "Telegram Alert",
       "webhookId": "ad6d1bbc-7dfc-4b1c-b6de-0458c86f4952",
       "credentials": {
         "telegramApi": {
-          "id": "Msgyb27BtAGmKy9J",
+          "id": "7eu2Bm5Pdv5aFxZ1",
           "name": "Telegram account"
         }
       }
@@ -923,16 +931,16 @@
     "executionOrder": "v1",
     "binaryMode": "separate",
     "timeSavedMode": "fixed",
-    "errorWorkflow": "6sPBZjgzdZ3weJZc",
+    "errorWorkflow": "MSwWbYHhzzKKOw0h",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "eb809323-f575-4bc1-867a-dabe3467d278",
+  "versionId": "e535d3db-72fc-4bf6-afe3-3ee4e0f5ee3c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "d20e0a5432cdf9abded84f8ba9550f63577fa05f4bc7d9a51acf9f0cd9966e9b"
   },
   "nodeGroups": [],
-  "id": "nTRUvz5iRdR4G5Dx",
+  "id": "03u1joh8e54MQUZk",
   "tags": []
 }

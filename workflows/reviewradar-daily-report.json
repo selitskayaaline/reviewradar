@@ -11,7 +11,7 @@
         448,
         0
       ],
-      "id": "5192ce39-e6de-4ce8-90cb-93aa949c8a10",
+      "id": "d34361dd-3081-43f9-ae10-7070437b8528",
       "name": "Format Daily Report"
     },
     {
@@ -29,12 +29,12 @@
         672,
         0
       ],
-      "id": "e49a5e16-73b8-4c55-a06c-5573d867bc9f",
+      "id": "f2618720-f2ab-4618-a5c7-5835b6fac3e1",
       "name": "Send Daily Report",
       "webhookId": "7287f3dd-8b78-495c-bd29-22bdabd827e3",
       "credentials": {
         "telegramApi": {
-          "id": "Msgyb27BtAGmKy9J",
+          "id": "7eu2Bm5Pdv5aFxZ1",
           "name": "Telegram account"
         }
       }
@@ -55,7 +55,7 @@
         0,
         0
       ],
-      "id": "10adaa78-77e2-4a8f-abbd-9584e321c040",
+      "id": "805e57d5-8fc6-49de-b996-fa971d4066eb",
       "name": "Every Morning 10AM"
     },
     {
@@ -70,11 +70,11 @@
         224,
         0
       ],
-      "id": "3bfddf9b-dd7d-491c-8cec-fc832b345b16",
+      "id": "20044daa-372a-4f62-b39e-f6416c52e80e",
       "name": "Get Daily Stats",
       "credentials": {
         "postgres": {
-          "id": "yWNYu4QjXFteL1Lw",
+          "id": "PVq3E01aX0bzAKHS",
           "name": "Postgres account"
         }
       }
@@ -121,12 +121,12 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "8ad07fe4-0562-4a6d-841e-8e2c5a91876a",
+  "versionId": "26665cf2-e9c8-44ba-85ca-d88065775f74",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "d20e0a5432cdf9abded84f8ba9550f63577fa05f4bc7d9a51acf9f0cd9966e9b"
   },
   "nodeGroups": [],
-  "id": "YaKrbz5C4Jo9nI6l",
+  "id": "Zh6YjJ11RsZX3jUE",
   "tags": []
 }

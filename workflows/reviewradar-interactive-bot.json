@@ -13,7 +13,7 @@
           "conditions": [
             {
               "id": "8b6500f3-8a29-4a34-9c6f-bbd18d66c9b4",
-              "leftValue": "={{ $json.text }}",
+              "leftValue": "={{ $json.message.text }}",
               "rightValue": "/start",
               "operator": {
                 "type": "string",
@@ -28,16 +28,16 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.4,
       "position": [
-        -208,
-        -80
+        144,
+        208
       ],
-      "id": "b879a7b9-b710-4c56-b5ca-c893af849a3f",
+      "id": "ad6af7c9-f7c3-48be-94d6-4b28e7adbaeb",
       "name": "Is /start?"
     },
     {
       "parameters": {
-        "chatId": "409203118",
-        "text": "Привет! Я бот ReviewRadar. Отправь мне любой отзыв, и я скажу, хороший он или плохой, и о чем он.",
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=Привет! Я бот ReviewRadar. 🤖\n\nОтправь мне отзыв в формате одной строки:\nАРТИКУЛ ОЦЕНКА(1-5) ТЕКСТ\n\nПример: A-100 2 Платье порвалось после стирки.",
         "additionalFields": {
           "appendAttribution": false
         }
@@ -45,15 +45,15 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        192,
-        -80
+        544,
+        208
       ],
-      "id": "47aa3274-1f02-40dd-978d-5892b752617e",
+      "id": "44233d78-bb26-4fa2-bc39-04e9c4f45976",
       "name": "Reply Greeting",
       "webhookId": "6e955950-a740-47be-b51c-cfafec85d41c",
       "credentials": {
         "telegramApi": {
-          "id": "Msgyb27BtAGmKy9J",
+          "id": "7eu2Bm5Pdv5aFxZ1",
           "name": "Telegram account"
         }
       }
@@ -72,11 +72,12 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.4,
       "position": [
-        -352,
-        -288
+        192,
+        -1024
       ],
-      "id": "bfe5d2a0-3ed3-4859-8720-9a0a27e1cf01",
-      "name": "Run Every Minute"
+      "id": "2be919ff-57cb-4f71-9c81-c9262465e381",
+      "name": "Run Every Minute",
+      "disabled": true
     },
     {
       "parameters": {
@@ -85,11 +86,12 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -128,
-        -288
+        416,
+        -1024
       ],
-      "id": "8d4efbec-b173-407d-836c-66c2f2a7de8e",
-      "name": "Get Offset"
+      "id": "59e8626c-8d26-4a0e-b0ce-4157fc105aa8",
+      "name": "Get Offset",
+      "disabled": true
     },
     {
       "parameters": {
@@ -108,11 +110,12 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        112,
-        -288
+        656,
+        -1024
       ],
-      "id": "16367816-6b3e-460f-a7aa-4042a990cdad",
-      "name": "Ask Telegram"
+      "id": "bf92094c-6c98-4300-b213-b6fd1a7712fb",
+      "name": "Ask Telegram",
+      "disabled": true
     },
     {
       "parameters": {
@@ -121,11 +124,12 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        336,
-        -288
+        880,
+        -1024
       ],
-      "id": "0d850c7f-1f60-41f1-bb70-fb3082032a73",
-      "name": "Parse Updates"
+      "id": "a9ed69f1-8048-454e-a92a-50b5d06efe66",
+      "name": "Parse Updates",
+      "disabled": true
     },
     {
       "parameters": {
@@ -135,45 +139,44 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"article\": \"TG-BOT\",\n  \"rating\": 5,\n  \"text\": \"{{ $json.text }}\"\n}",
+        "jsonBody": "={\n  \"article\": \"{{ $json.article }}\",\n  \"rating\": {{ $json.rating }},\n  \"text\": \"{{ $json.text }}\"\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        240,
-        176
+        944,
+        672
       ],
-      "id": "b057fb2a-eef7-4904-b73e-bba3e4157b7d",
+      "id": "4ad97e38-3ded-42e8-bcfc-b1dd068cb97e",
       "name": "Send to Analysis",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "zUqtGdQekSaXaoRv",
-          "name": "Header Auth account 2"
+          "id": "lFLCElFQ1vY7E4Ds",
+          "name": "Header Auth account"
         }
       }
     },
     {
       "parameters": {
-        "chatId": "={{ $('Parse Updates').item.json.chatId }}",
+        "chatId": "={{ $('Listen Telegram').item.json.message.chat.id }}",
         "text": "=🤖 *Анализ готов!*\n\n*Тональность:* {{ $json.sentiment }}\n*Категория:* {{ $json.category }}\n*Резюме:* {{ $json.summary }}",
         "additionalFields": {
-          "appendAttribution": false,
-          "parse_mode": "Markdown"
+          "appendAttribution": false
         }
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        608,
-        176
+        960,
+        464
       ],
-      "id": "3e4d9d14-fe69-4c6f-903c-645de21963d9",
+      "id": "30ac199f-76cf-43f5-b27e-48a034201bcb",
       "name": "Bot Reply",
       "webhookId": "81ef7663-9f16-4d9f-bdc2-aa260a735efd",
       "credentials": {
         "telegramApi": {
-          "id": "Msgyb27BtAGmKy9J",
+          "id": "7eu2Bm5Pdv5aFxZ1",
           "name": "Telegram account"
         }
       }
@@ -190,7 +193,7 @@
           "conditions": [
             {
               "id": "85e822b7-568e-4b51-96e2-d850502c572e",
-              "leftValue": "={{ $json.text }}",
+              "leftValue": "={{ $json.message.text }}",
               "rightValue": "/report",
               "operator": {
                 "type": "string",
@@ -205,10 +208,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.4,
       "position": [
-        -48,
-        192
+        304,
+        480
       ],
-      "id": "c2be4753-073c-49b8-9c68-cd80c8beac40",
+      "id": "090984c5-e48f-46ee-9b05-414e969fe684",
       "name": "Is /report?"
     },
     {
@@ -220,14 +223,14 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.8,
       "position": [
-        432,
-        32
+        784,
+        320
       ],
-      "id": "e3e93cba-270d-4a0f-b45d-f37ed26a3f82",
+      "id": "f0c5a801-3bf4-4cc4-9d61-02ae6e15419d",
       "name": "Get Report Stats",
       "credentials": {
         "postgres": {
-          "id": "yWNYu4QjXFteL1Lw",
+          "id": "PVq3E01aX0bzAKHS",
           "name": "Postgres account"
         }
       }
@@ -239,15 +242,15 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        656,
-        32
+        1008,
+        320
       ],
-      "id": "fd5d871b-66a0-421a-9f64-9471a01076f2",
+      "id": "d8119cf6-f3e5-4ec5-8293-3314eee655c1",
       "name": "Format Report"
     },
     {
       "parameters": {
-        "chatId": "={{ $('Parse Updates').item.json.chatId }}",
+        "chatId": "={{ $('Listen Telegram').item.json.message.chat.id }}",
         "text": "= {{ $json.text }}",
         "additionalFields": {
           "appendAttribution": false,
@@ -257,15 +260,109 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        880,
-        32
+        1232,
+        320
       ],
-      "id": "9bc1a602-6646-48df-9c73-fe9783559abc",
+      "id": "d54d2a45-b323-43d0-a4c4-83715a8bd9dc",
       "name": "Send Report",
       "webhookId": "998e3576-71f7-4ae0-b93e-a6969681a3d1",
       "credentials": {
         "telegramApi": {
-          "id": "Msgyb27BtAGmKy9J",
+          "id": "7eu2Bm5Pdv5aFxZ1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -176,
+        208
+      ],
+      "id": "aebf9f05-681c-412d-9a93-56dd2ee715fe",
+      "name": "Listen Telegram",
+      "webhookId": "59793f8d-a60c-4e48-859b-e88d89d29d6f",
+      "credentials": {
+        "telegramApi": {
+          "id": "7eu2Bm5Pdv5aFxZ1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawText = $json.message.text.trim();\nconst parts = rawText.split(/\\s+/);\n\n\nif (parts.length < 3) {\n    return { \n        json: { \n            error: true, \n            message: \"❌ Вы забыли ввести артикул, оценку или текст отзыва.\\nФормат: АРТИКУЛ ОЦЕНКА(1-5) ТЕКСТ\" \n        } \n    };\n}\n\nconst article = parts[0];\nconst ratingStr = parts[1];\nconst text = parts.slice(2).join(\" \");\n\n\nconst rating = parseInt(ratingStr, 10);\n\n\nif (isNaN(rating)) {\n    return { \n        json: { \n            error: true, \n            message: \"❌ Вы забыли ввести артикул, оценку или текст отзыва.\\nФормат: АРТИКУЛ ОЦЕНКА(1-5) ТЕКСТ\" \n        } \n    };\n}\n\n\nif (rating < 1 || rating > 5) {\n    return { \n        json: { \n            error: true, \n            message: \"❌ Оценка должна быть от 1 до 5.\" \n        } \n    };\n}\n\nreturn {\n    json: {\n        error: false,\n        article: article,\n        rating: rating,\n        text: text\n    }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        608
+      ],
+      "id": "58eae0e6-d331-4500-87e0-7282cae91d2f",
+      "name": "Parse Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "7aaec1f4-2b92-454a-ad79-6e30727e6cb6",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        592,
+        640
+      ],
+      "id": "b8d7f09c-6b2e-4854-ba1f-b8dbaaddff5f",
+      "name": "Is Format Valid?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Listen Telegram').item.json.message.chat.id }}",
+        "text": "={{ $json.message }} ",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        832
+      ],
+      "id": "b0868cd3-ec04-4398-a239-4be6a3d70d6c",
+      "name": "Send Format Error",
+      "webhookId": "9d9cd759-d498-4664-89b3-3c5e279a650a",
+      "credentials": {
+        "telegramApi": {
+          "id": "7eu2Bm5Pdv5aFxZ1",
           "name": "Telegram account"
         }
       }
@@ -326,13 +423,7 @@
     },
     "Parse Updates": {
       "main": [
-        [
-          {
-            "node": "Is /start?",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Send to Analysis": {
@@ -357,7 +448,7 @@
         ],
         [
           {
-            "node": "Send to Analysis",
+            "node": "Parse Input",
             "type": "main",
             "index": 0
           }
@@ -385,6 +476,51 @@
           }
         ]
       ]
+    },
+    "Listen Telegram": {
+      "main": [
+        [
+          {
+            "node": "Is /start?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Greeting": {
+      "main": [
+        []
+      ]
+    },
+    "Parse Input": {
+      "main": [
+        [
+          {
+            "node": "Is Format Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Format Valid?": {
+      "main": [
+        [
+          {
+            "node": "Send to Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Format Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -392,12 +528,12 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "069b25ff-da73-4924-827d-b0e5ec071e82",
+  "versionId": "7406415b-2ea4-4755-9d17-5fabd2509743",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "d20e0a5432cdf9abded84f8ba9550f63577fa05f4bc7d9a51acf9f0cd9966e9b"
   },
   "nodeGroups": [],
-  "id": "jqb8nQ8MngWOK51q",
+  "id": "G7bt5A1tKvGe0Lif",
   "tags": []
 }
