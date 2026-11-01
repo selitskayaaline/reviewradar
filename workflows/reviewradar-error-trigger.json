@@ -9,7 +9,7 @@
         0,
         0
       ],
-      "id": "12bf3173-90f3-4657-bdcd-31f5b633bd45",
+      "id": "7c5c9462-0463-4b8f-9c18-2a0a17119d1f",
       "name": "Error Trigger"
     },
     {
@@ -26,12 +26,12 @@
         224,
         0
       ],
-      "id": "695efca0-6134-46ce-a035-8708c95220fe",
+      "id": "9b45f5d9-cc1a-4d10-b041-8e29e67ca7a1",
       "name": "Send a text message",
       "webhookId": "157c0433-01ea-4002-bbd1-276bd57542cc",
       "credentials": {
         "telegramApi": {
-          "id": "Msgyb27BtAGmKy9J",
+          "id": "7eu2Bm5Pdv5aFxZ1",
           "name": "Telegram account"
         }
       }
@@ -56,12 +56,12 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "c69274ad-16e7-4ea5-8657-5e9455a70850",
+  "versionId": "64e61518-8dfe-4484-9223-827adac956ad",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "d20e0a5432cdf9abded84f8ba9550f63577fa05f4bc7d9a51acf9f0cd9966e9b"
   },
   "nodeGroups": [],
-  "id": "6sPBZjgzdZ3weJZc",
+  "id": "MSwWbYHhzzKKOw0h",
   "tags": []
 }
